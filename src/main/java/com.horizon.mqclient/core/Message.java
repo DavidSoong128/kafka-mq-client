@@ -1,4 +1,4 @@
-package com.horizon.kafka.client.core;
+package com.horizon.mqclient.core;
 
 import java.io.Serializable;
 import java.util.HashMap;

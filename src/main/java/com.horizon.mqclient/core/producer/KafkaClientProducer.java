@@ -1,4 +1,4 @@
-package com.horizon.kafka.client.core.producer;
+package com.horizon.mqclient.core.producer;
 
 /**
  * kafka client producer

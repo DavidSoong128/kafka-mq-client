@@ -1,4 +1,4 @@
-package com.horizon.kafka.client.common;
+package com.horizon.mqclient.common;
 
 /**
  * @author : David.Song/Java Engineer

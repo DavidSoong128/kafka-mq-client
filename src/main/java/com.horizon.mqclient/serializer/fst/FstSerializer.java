@@ -1,4 +1,4 @@
-package com.horizon.kafka.client.serializer.fst;
+package com.horizon.mqclient.serializer.fst;
 
 import org.nustaq.serialization.FSTConfiguration;
 import org.nustaq.serialization.FSTObjectInput;

@@ -1,4 +1,4 @@
-package com.horizon.kafka.client.core.consumer;
+package com.horizon.mqclient.core.consumer;
 
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 

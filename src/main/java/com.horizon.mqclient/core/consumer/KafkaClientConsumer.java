@@ -1,7 +1,7 @@
-package com.horizon.kafka.client.core.consumer;
+package com.horizon.mqclient.core.consumer;
 
 import com.caucho.hessian.io.ValueDeserializer;
-import com.horizon.kafka.client.common.DefaultConsumerConfig;
+import com.horizon.mqclient.common.DefaultConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;

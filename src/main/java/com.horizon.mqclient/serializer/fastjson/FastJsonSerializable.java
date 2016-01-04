@@ -1,4 +1,4 @@
-package com.horizon.kafka.client.serializer.fastjson;
+package com.horizon.mqclient.serializer.fastjson;
 
 
 import com.alibaba.fastjson.JSON;

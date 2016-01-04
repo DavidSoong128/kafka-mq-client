@@ -1,4 +1,4 @@
-package com.horizon.kafka.client.serializer.fst;
+package com.horizon.mqclient.serializer.fst;
 
 import java.io.IOException;
 

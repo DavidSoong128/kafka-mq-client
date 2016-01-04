@@ -1,4 +1,4 @@
-package com.horizon.kafka.client.utils;
+package com.horizon.mqclient.utils;
 
 /**
  * the tool for handling String data

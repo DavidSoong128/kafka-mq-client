@@ -1,4 +1,4 @@
-package com.horizon.kafka.client.config;
+package com.horizon.mqclient.config;
 
 import java.io.InputStream;
 import java.util.Properties;

@@ -1,4 +1,4 @@
-package com.horizon.kafka.client.helper;
+package com.horizon.mqclient.helper;
 
 /**
  * kafka helper

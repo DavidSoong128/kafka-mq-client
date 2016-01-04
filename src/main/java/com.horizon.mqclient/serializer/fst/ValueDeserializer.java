@@ -1,6 +1,6 @@
-package com.horizon.kafka.client.serializer.fst;
+package com.horizon.mqclient.serializer.fst;
 
-import com.horizon.kafka.client.core.Message;
+import com.horizon.mqclient.core.Message;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 
@@ -8,27 +8,27 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * ÊµÏÖkafka Deserializer½Ó¿ÚµÄFst·´ÐòÁÐ»¯
+ * Êµï¿½ï¿½kafka Deserializerï¿½Ó¿Úµï¿½Fstï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½
  */
 public class ValueDeserializer implements Deserializer<Message> {
 
     private FstSerializer fstSerializer;
 
     /**
-     * ³õÊ¼»¯ÅäÖÃ
-     * @param configs ÅäÖÃÐÅÏ¢
-     * @param isKey ÊÇkey»¹ÊÇvalue
+     * ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+     * @param configs ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+     * @param isKey ï¿½ï¿½keyï¿½ï¿½ï¿½ï¿½value
      */
     public void configure(Map<String, ?> configs, boolean isKey) {
         fstSerializer = new FstSerializer();
     }
 
     /**
-     * ·´ÐòÁÐ»¯·½·¨
-     * @param topic Ö÷ÌâÃû×Ö
-     * @param data ×Ö½ÚÊý×é
-     * @return ÊÂ¼þ¶ÔÏó
-     * @throws SerializationException ÐòÁÐ»¯Òì³£
+     * ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½
+     * @param topic ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+     * @param data ï¿½Ö½ï¿½ï¿½ï¿½ï¿½ï¿½
+     * @return ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
+     * @throws SerializationException ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ì³£
      */
     public Message deserialize(String topic, byte[] data) {
         try {

@@ -11,7 +11,7 @@ import java.util.Properties;
  */
 public class MQClientConfig {
 
-    private final static String		URL							        = "/kafka-client.properties";
+    private final static String CONFIG_PATH = "/kafka-client.properties";
 
     private final static String BOOTSTRAP_SERVERS_KEY = "kafka.server.hosts";
 
@@ -24,11 +24,11 @@ public class MQClientConfig {
         private static MQClientConfig	config	= new MQClientConfig();
     }
 
-    public static MQClientConfig getInstence() {
+    public static MQClientConfig configHolder() {
         return Holder.config;
     }
 
-    private Properties prop	= getProperties(URL);
+    private Properties prop	= getProperties(CONFIG_PATH);
 
     private static Properties getProperties(String url) {
         try {
@@ -42,11 +42,17 @@ public class MQClientConfig {
         return null;
     }
 
-    public String getKakfaServers(){
-        return prop.getProperty(BOOTSTRAP_SERVERS_KEY);
+    public String getKafkaServers(){
+        String kafkaServerHosts = prop.getProperty(BOOTSTRAP_SERVERS_KEY);
+        if(kafkaServerHosts == null || kafkaServerHosts.length() ==0)
+            throw new IllegalArgumentException("kafka.server.hosts can`t be null");
+        return kafkaServerHosts;
     }
 
     public String getConsumerGroup(){
-        return prop.getProperty(CONSUMER_GROUP_KEY);
+        String groupId = prop.getProperty(CONSUMER_GROUP_KEY);
+        if(groupId == null || groupId.length() ==0)
+            throw new IllegalArgumentException("consumer.group can`t be null");
+        return groupId;
     }
 }

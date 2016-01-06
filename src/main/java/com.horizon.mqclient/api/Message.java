@@ -1,4 +1,4 @@
-package com.horizon.mqclient.core;
+package com.horizon.mqclient.api;
 
 import java.io.Serializable;
 import java.util.HashMap;

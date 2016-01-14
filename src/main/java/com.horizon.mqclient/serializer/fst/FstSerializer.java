@@ -3,6 +3,8 @@ package com.horizon.mqclient.serializer.fst;
 import org.nustaq.serialization.FSTConfiguration;
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,6 +16,8 @@ import java.io.IOException;
  * @since : 1.0.0
  */
 public class FstSerializer implements Serializer{
+
+	private Logger logger = LoggerFactory.getLogger(FstSerializer.class);
 
 	private FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
 
@@ -28,7 +32,16 @@ public class FstSerializer implements Serializer{
 
 	@Override
 	public <T> T deserialize(byte[] bytes, Class<T> clazz) throws IOException {
-		return null;
+		T result = null;
+		try {
+			ByteArrayInputStream stream = new ByteArrayInputStream(bytes);
+			FSTObjectInput in = conf.getObjectInput(stream);
+			result = (T) in.readObject(clazz);
+			stream.close();
+		} catch (Exception e) {
+			logger.error("",e);
+		}
+		return result;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -40,7 +53,7 @@ public class FstSerializer implements Serializer{
 			result = (T) in.readObject();
 			stream.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("",e);
 		}
 		return result;
 	}

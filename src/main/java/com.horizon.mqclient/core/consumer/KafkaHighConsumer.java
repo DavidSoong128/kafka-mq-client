@@ -1,20 +1,13 @@
 package com.horizon.mqclient.core.consumer;
 
-import com.caucho.hessian.io.ValueDeserializer;
 import com.horizon.mqclient.api.MessageProcessor;
 import com.horizon.mqclient.api.Message;
 import com.horizon.mqclient.api.TopicWithPartition;
 import com.horizon.mqclient.common.ConsumerStatus;
-import com.horizon.mqclient.common.DefaultConsumerConfig;
 import com.horizon.mqclient.common.MsgHandleStreamPool;
-import com.horizon.mqclient.config.MQClientConfig;
-import com.horizon.mqclient.utils.StringUtils;
-import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,32 +36,32 @@ public class KafkaHighConsumer extends AbstractConsumer<String,Message>{
         private static KafkaHighConsumer clientConsumer = new KafkaHighConsumer();
     }
 
-    public static KafkaHighConsumer clientConsumer(){
+    public static KafkaHighConsumer kafkaHighConsumer(){
         return ConsumerHolder.clientConsumer;
     }
 
 
-    public void subscribe(String topic, MessageProcessor processor) throws Exception {
+    public void subscribe(String topic, MessageProcessor processor){
         super.subscribe(topic);
         MsgHandleStreamPool.poolHolder().execute(new MessageWorkAutoCommitTask(kafkaConsumer,processor));
     }
 
-    public void subscribe(List topics ,MessageProcessor processor) throws Exception {
+    public void subscribe(List topics ,MessageProcessor processor){
         super.subscribe(topics);
         MsgHandleStreamPool.poolHolder().execute(new MessageWorkAutoCommitTask(kafkaConsumer, processor));
     }
 
-    public void subscribe(Pattern pattern,MessageProcessor processor) throws Exception {
+    public void subscribe(Pattern pattern,MessageProcessor processor) {
         super.subscribe(pattern);
         MsgHandleStreamPool.poolHolder().execute(new MessageWorkAutoCommitTask(kafkaConsumer,processor));
     }
 
-    public void assign(String topic, Integer[] partitions,MessageProcessor processor) throws Exception {
+    public void assign(String topic, Integer[] partitions,MessageProcessor processor) {
         super.assign(topic, partitions);
         MsgHandleStreamPool.poolHolder().execute(new MessageWorkAutoCommitTask(kafkaConsumer,processor));
     }
 
-    public void assign(TopicWithPartition topicWithPartition, MessageProcessor processor) throws Exception {
+    public void assign(TopicWithPartition topicWithPartition, MessageProcessor processor){
         super.assign(topicWithPartition);
         MsgHandleStreamPool.poolHolder().execute(new MessageWorkAutoCommitTask(kafkaConsumer,processor));
     }

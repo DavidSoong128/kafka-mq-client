@@ -1,4 +1,4 @@
-package com.horizon.mqclient.config;
+package com.horizon.mqclient.common;
 
 import java.io.InputStream;
 import java.util.Properties;
@@ -9,7 +9,7 @@ import java.util.Properties;
  * @date : 2016/1/4 11:53
  * @since : 1.0.0
  */
-public class MQClientConfig {
+public class KafkaClientConfig {
 
     private final static String CONFIG_PATH = "/kafka-client.properties";
 
@@ -17,14 +17,14 @@ public class MQClientConfig {
 
     private final static String CONSUMER_GROUP_KEY = "consumer.group";
 
-    private MQClientConfig() {
+    private KafkaClientConfig() {
     }
 
     private static class Holder {
-        private static MQClientConfig	config	= new MQClientConfig();
+        private static KafkaClientConfig config	= new KafkaClientConfig();
     }
 
-    public static MQClientConfig configHolder() {
+    public static KafkaClientConfig configHolder() {
         return Holder.config;
     }
 
@@ -33,7 +33,7 @@ public class MQClientConfig {
     private static Properties getProperties(String url) {
         try {
             Properties prop = new Properties();
-            InputStream in = MQClientConfig.class.getResourceAsStream(url);
+            InputStream in = KafkaClientConfig.class.getResourceAsStream(url);
             prop.load(in);
             in.close();
             return prop;

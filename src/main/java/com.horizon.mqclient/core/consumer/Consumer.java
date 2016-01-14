@@ -28,17 +28,17 @@ public interface Consumer<K,V> {
     /**
      * subscribe one topic
      */
-    public void subscribe(String topic) throws Exception;
+    public void subscribe(String topic);
 
     /**
      * subscribe list topics
      */
-    public void subscribe(List<String> topics) throws Exception;
+    public void subscribe(List<String> topics);
 
     /**
      * subscribe pattern topic with callback
      */
-    public void subscribe(Pattern pattern) throws Exception;
+    public void subscribe(Pattern pattern);
 
     /**
      * close client consumer,release resources
@@ -64,14 +64,14 @@ public interface Consumer<K,V> {
      * @param topicWithPartition
      *
      */
-    public void assign(TopicWithPartition topicWithPartition) throws Exception;
+    public void assign(TopicWithPartition topicWithPartition);
 
 
     /**
      * assgin topic list to a list of partition
      * @param topicWithPartitions
      */
-    public void assign(TopicWithPartition... topicWithPartitions) throws Exception;
+    public void assign(TopicWithPartition... topicWithPartitions);
 
     /**
      * one topic to list of partition
@@ -79,7 +79,7 @@ public interface Consumer<K,V> {
      * @param partitions
      * @throws Exception
      */
-    public void assign(String topic, Integer[] partitions) throws Exception;
+    public void assign(String topic, Integer[] partitions);
 
 
 
@@ -93,20 +93,20 @@ public interface Consumer<K,V> {
     /**
      * reset the offset to resumes message
      */
-    public void resetOffset(TopicWithPartition topicWithPartition, long resetOffset) throws Exception;
+    public void resetOffset(TopicWithPartition topicWithPartition, long resetOffset);
 
     /**
      * reset the offset to begin offset
      * @param topicWithPartitions
      */
-    public void resetOffsetToBegin(TopicWithPartition... topicWithPartitions) throws Exception;
+    public void resetOffsetToBegin(TopicWithPartition... topicWithPartitions);
 
 
     /**
      * reset the offset to end offset
      * @param topicWithPartitions
      */
-    public void resetOffsetToEnd(TopicWithPartition... topicWithPartitions) throws Exception;
+    public void resetOffsetToEnd(TopicWithPartition... topicWithPartitions);
 
 
     /**
@@ -115,7 +115,7 @@ public interface Consumer<K,V> {
      * @return
      * @throws Exception
      */
-    public long currentOffset(TopicWithPartition topicWithPartition) throws Exception;
+    public long currentOffset(TopicWithPartition topicWithPartition);
 
 
     /**
@@ -128,10 +128,10 @@ public interface Consumer<K,V> {
      * on the specified assigned partitions and resume the consumption on the specified paused partitions
      * respectively in the future poll(long) calls.
      */
-    public void pauseConsume(TopicWithPartition... topicWithPartitions) throws Exception;
+    public void pauseConsume(TopicWithPartition... topicWithPartitions);
 
 
-    public void resumeConsume(TopicWithPartition... topicWithPartitions) throws Exception;
+    public void resumeConsume(TopicWithPartition... topicWithPartitions);
 
 
     /**
@@ -143,34 +143,34 @@ public interface Consumer<K,V> {
      * manual commit offset with not blocking
      * @throws Exception
      */
-    public void commitAsync() throws Exception;
+    public void commitAsync();
 
     /**
      * Commit the specified offsets for the specified list of topics and partitions to Kafka
      * @param offsets
      * @param callback
      */
-    public void commitAsync(Map<TopicWithPartition,Long> offsets, CommitOffsetCallback callback) throws Exception;
+    public void commitAsync(Map<TopicWithPartition,Long> offsets, CommitOffsetCallback callback);
 
     /**
      * Commit offsets returned on the last poll() for the subscribed list of topics and partitions.
      * @param callback
      * @throws Exception
      */
-    public void commitAsync(CommitOffsetCallback callback) throws Exception;
+    public void commitAsync(CommitOffsetCallback callback);
 
 
     /**
      * Commit offsets returned on the last poll() for all the subscribed list of topics and partitions.
      * @throws Exception
      */
-    public void commitSync() throws Exception;
+    public void commitSync();
 
     /**
      * Commit the specified offsets for the specified list of topics and partitions.
      * @param offsets
      * @throws Exception
      */
-    public void commitSync(Map<TopicWithPartition,Long> offsets) throws Exception;
+    public void commitSync(Map<TopicWithPartition,Long> offsets);
 
 }

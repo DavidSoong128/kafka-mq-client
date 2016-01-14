@@ -25,11 +25,11 @@ public abstract class CommitOffsetCallback implements OffsetCommitCallback{
                 tpOffsetMap.put(new TopicWithPartition(topicPartition.topic(),topicPartition.partition()),
                         offsetAndMetadata.offset());
             }
-            this.afterCommit(tpOffsetMap);
+            this.commitComplete(tpOffsetMap);
         }
     }
     /**
      * @param tpOffsetMap: key: topicWithPartition, value: offset value
      */
-    public abstract void afterCommit(Map<TopicWithPartition,Long> tpOffsetMap);
+    public abstract void commitComplete(Map<TopicWithPartition, Long> tpOffsetMap);
 }

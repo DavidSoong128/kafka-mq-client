@@ -6,6 +6,7 @@ import com.horizon.mqclient.api.MessageProcessor;
 import com.horizon.mqclient.api.TopicWithPartition;
 import com.horizon.mqclient.common.ConsumerStatus;
 import com.horizon.mqclient.common.MsgHandleStreamPool;
+import com.horizon.mqclient.exception.KafkaMQException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -42,47 +43,47 @@ public class KafkaLowConsumer extends AbstractConsumer<String,Message>{
         private static KafkaLowConsumer clientConsumer = new KafkaLowConsumer();
     }
 
-    public static KafkaLowConsumer clientConsumer(){
+    public static KafkaLowConsumer kafkaLowConsumer(){
         return ConsumerHolder.clientConsumer;
     }
 
-    public void subscribe(String topic, MessageProcessor processor) throws Exception {
+    public void subscribe(String topic, MessageProcessor processor) {
         super.subscribe(topic);
         MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer,processor));
     }
 
-    public void subscribe(List topics ,MessageProcessor processor) throws Exception {
+    public void subscribe(List topics ,MessageProcessor processor) {
         super.subscribe(topics);
         MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer, processor));
     }
 
-    public void subscribe(Pattern pattern,MessageProcessor processor) throws Exception {
+    public void subscribe(Pattern pattern,MessageProcessor processor) {
         super.subscribe(pattern);
         MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer, processor));
     }
 
-    public void assign(String topic, Integer[] partitions,MessageProcessor processor) throws Exception {
+    public void assign(String topic, Integer[] partitions,MessageProcessor processor) {
         super.assign(topic, partitions);
         MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer, processor));
     }
 
-    public void assign(TopicWithPartition topicWithPartition, MessageProcessor processor) throws Exception {
+    public void assign(TopicWithPartition topicWithPartition, MessageProcessor processor) {
         super.assign(topicWithPartition);
         MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer,processor));
     }
 
     @Override
-    public void commitAsync() throws Exception {
+    public void commitAsync(){
         if(status != ConsumerStatus.RUNNING){
-            throw new Exception("The consumer is not running now!");
+            throw new KafkaMQException("The consumer is not running now!");
         }
         this.kafkaConsumer.commitAsync();
     }
 
     @Override
-    public void commitAsync(Map<TopicWithPartition,Long> offsets, CommitOffsetCallback callback) throws Exception {
+    public void commitAsync(Map<TopicWithPartition,Long> offsets, CommitOffsetCallback callback){
         if(status != ConsumerStatus.RUNNING){
-            throw new Exception("The consumer is not running now!");
+            throw new KafkaMQException("The consumer is not running now!");
         }
         Map<TopicPartition,OffsetAndMetadata> tmpOffsets = new HashMap<>();
         for(TopicWithPartition topicWithPartition : offsets.keySet()){
@@ -95,25 +96,25 @@ public class KafkaLowConsumer extends AbstractConsumer<String,Message>{
     }
 
     @Override
-    public void commitAsync(CommitOffsetCallback callback) throws Exception {
+    public void commitAsync(CommitOffsetCallback callback){
         if(status != ConsumerStatus.RUNNING){
-            throw new Exception("The consumer is not running now!");
+            throw new KafkaMQException("The consumer is not running now!");
         }
         this.kafkaConsumer.commitAsync(callback);
     }
 
     @Override
-    public void commitSync() throws Exception {
+    public void commitSync(){
         if(status != ConsumerStatus.RUNNING){
-            throw new Exception("The consumer is not running now!");
+            throw new KafkaMQException("The consumer is not running now!");
         }
         this.kafkaConsumer.commitSync();
     }
 
     @Override
-    public void commitSync(Map<TopicWithPartition, Long> offsets) throws Exception {
+    public void commitSync(Map<TopicWithPartition, Long> offsets){
         if(status != ConsumerStatus.RUNNING){
-            throw new Exception("The consumer is not running now!");
+            throw new KafkaMQException("The consumer is not running now!");
         }
         Map<TopicPartition,OffsetAndMetadata> tmpOffsets = new HashMap<>();
         for(TopicWithPartition topicWithPartition : offsets.keySet()){

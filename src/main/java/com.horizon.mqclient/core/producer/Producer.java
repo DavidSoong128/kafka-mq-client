@@ -20,37 +20,16 @@ public interface Producer<K,V> {
     /**
      * Send the given record asynchronously and return a future which will eventually contain the response information.
      * @param message The record to send
-     * @param topic The topic to send
      * @return A future which will eventually contain the response information
      */
-    public Map<TopicWithPartition,Long> send(String topic, Message message);
-
-    /**
-     * send message given record and topic and partition
-     * @param topic
-     * @param partition
-     * @param message
-     * @return
-     */
-    public Map<TopicWithPartition,Long> send(String topic, Integer partition, Message message);
-    /**
-     * invoke callback after send message
-     * @param topic
-     * @param message
-     * @param callback
-     * @return
-     */
-    public Map<TopicWithPartition,Long> send(String topic, Message message, ProducerSendCallback callback);
+    public Map<TopicWithPartition,Long> send(Message message);
     /**
      * send message given record and topic and partition
      * invoke callback after send message
-     * @param topic
-     * @param partition
      * @param message
      * @return
      */
-    public Map<TopicWithPartition,Long> send(String topic, Integer partition, Message message,
-                                             ProducerSendCallback callback);
+    public Map<TopicWithPartition,Long> send(Message message, ProducerSendCallback callback);
     /**
      * Flush any accumulated records from the producer. Blocks until all sends are complete.
      */

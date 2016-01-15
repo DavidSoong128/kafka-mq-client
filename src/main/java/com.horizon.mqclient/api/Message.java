@@ -16,6 +16,7 @@ public class Message implements Serializable {
     private String messageId ;
 
     private String topic ;
+    private Integer partition;
     /**
      * message content byte format
      */
@@ -51,6 +52,25 @@ public class Message implements Serializable {
     public Message(String topic, Object messageObj, Map<String, Object> propertyMap) {
         this.topic = topic;
         this.messageObj = messageObj;
+        this.propertyMap = propertyMap;
+    }
+
+    public Message(String topic, Integer partition, byte[] messageByte) {
+        this.topic = topic;
+        this.partition = partition;
+        this.messageByte = messageByte;
+    }
+
+    public Message(String topic, Integer partition, Object messageObj) {
+        this.topic = topic;
+        this.partition = partition;
+        this.messageObj = messageObj;
+    }
+
+    public Message(String topic, Integer partition, byte[] messageByte, Map<String, Object> propertyMap) {
+        this.topic = topic;
+        this.partition = partition;
+        this.messageByte = messageByte;
         this.propertyMap = propertyMap;
     }
 
@@ -92,5 +112,13 @@ public class Message implements Serializable {
 
     public void setPropertyMap(Map<String, Object> propertyMap) {
         this.propertyMap = propertyMap;
+    }
+
+    public Integer getPartition() {
+        return partition;
+    }
+
+    public void setPartition(Integer partition) {
+        this.partition = partition;
     }
 }

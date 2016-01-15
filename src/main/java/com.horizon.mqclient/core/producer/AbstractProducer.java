@@ -49,7 +49,7 @@ public abstract class AbstractProducer<K,V> implements Producer<K,V>{
             producerConfigMap.put(DefaultProducerConfig.BUFFER_MEMORY_CONFIG,33554432);
         }
         if(producerConfigMap.get(DefaultProducerConfig.ACKS_CONFIG) == null){
-            producerConfigMap.put(DefaultProducerConfig.ACKS_CONFIG,1);
+            producerConfigMap.put(DefaultProducerConfig.ACKS_CONFIG,"1");
         }
         if(producerConfigMap.get(DefaultProducerConfig.REQUEST_TIMEOUT_MS_CONFIG) == null){
             producerConfigMap.put(DefaultProducerConfig.REQUEST_TIMEOUT_MS_CONFIG,30000);

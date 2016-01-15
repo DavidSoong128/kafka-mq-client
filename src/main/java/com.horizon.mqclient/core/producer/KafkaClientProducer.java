@@ -36,48 +36,26 @@ public class KafkaClientProducer extends AbstractProducer<String,Message>{
         private static KafkaClientProducer clientProducer = new KafkaClientProducer();
     }
 
-    public KafkaClientProducer kafkaClientProducer(){
+    public static KafkaClientProducer kafkaClientProducer(){
         return ProducerHolder.clientProducer;
     }
 
     @Override
-    public Map<TopicWithPartition, Long> send(String topic, Message message) {
-        if(StringUtils.isEmpty(topic) || message == null){
+    public Map<TopicWithPartition, Long> send(Message message) {
+        if(message == null || message.getTopic() == null){
             throw  new IllegalArgumentException("topic and message can`t be null");
         }
-        ProducerRecord<String,Message>  messageRecord = new ProducerRecord<>(topic,message);
+        ProducerRecord<String,Message>  messageRecord = new ProducerRecord<>(message.getTopic(),message);
         Future<RecordMetadata> future = this.kafkaProducer.send(messageRecord);
         return parseSendFuture(future);
     }
 
     @Override
-    public Map<TopicWithPartition, Long> send(String topic, Integer partition, Message message) {
-        if(StringUtils.isEmpty(topic) || partition == null || partition<0
-                || message == null){
-            throw  new IllegalArgumentException("topic and message can`t be null,partition can`t be negative");
-        }
-        ProducerRecord<String,Message>  messageRecord = new ProducerRecord<>(topic,partition,null,message);
-        Future<RecordMetadata> future = this.kafkaProducer.send(messageRecord);
-        return parseSendFuture(future);
-    }
-
-    @Override
-    public Map<TopicWithPartition, Long> send(String topic, Message message, ProducerSendCallback callback) {
-        if(StringUtils.isEmpty(topic) || message == null){
+    public Map<TopicWithPartition, Long> send(Message message, ProducerSendCallback callback) {
+        if(message == null || message.getTopic() == null){
             throw  new IllegalArgumentException("topic and message can`t be null");
         }
-        ProducerRecord<String,Message>  messageRecord = new ProducerRecord<>(topic,message);
-        Future<RecordMetadata> future = this.kafkaProducer.send(messageRecord,callback);
-        return parseSendFuture(future);
-    }
-
-    @Override
-    public Map<TopicWithPartition, Long> send(String topic, Integer partition, Message message,
-                                              ProducerSendCallback callback) {
-        if(StringUtils.isEmpty(topic) || partition == null || partition<0 || message == null){
-            throw  new IllegalArgumentException("topic and message can`t be null,partition can`t be negative");
-        }
-        ProducerRecord<String,Message>  messageRecord = new ProducerRecord<>(topic,partition,null,message);
+        ProducerRecord<String,Message>  messageRecord = new ProducerRecord<>(message.getTopic(),message);
         Future<RecordMetadata> future = this.kafkaProducer.send(messageRecord,callback);
         return parseSendFuture(future);
     }
@@ -87,7 +65,7 @@ public class KafkaClientProducer extends AbstractProducer<String,Message>{
         try {
             RecordMetadata recordMetadata = future.get();
             TopicWithPartition topicWithPartition = new TopicWithPartition(recordMetadata.topic(),
-                    recordMetadata.partition());
+                                                    recordMetadata.partition());
             tpLongMap.put(topicWithPartition, recordMetadata.offset());
         } catch (InterruptedException e) {
             logger.error("future get error ",e);

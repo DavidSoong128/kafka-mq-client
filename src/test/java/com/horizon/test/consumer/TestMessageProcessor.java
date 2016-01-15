@@ -1,5 +1,6 @@
 package com.horizon.test.consumer;
 
+import com.horizon.mqclient.api.AbstractMessageProcessor;
 import com.horizon.mqclient.api.Message;
 import com.horizon.mqclient.api.MessageProcessor;
 import org.slf4j.Logger;
@@ -11,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * @see
  * @since : 1.0.0
  */
-public class TestMessageProcessor implements MessageProcessor{
+public class TestMessageProcessor extends AbstractMessageProcessor{
 
     private Logger logger = LoggerFactory.getLogger(TestMessageProcessor.class);
 
@@ -19,10 +20,5 @@ public class TestMessageProcessor implements MessageProcessor{
     public void handleMessage(Message message) {
         String str = new String(message.getMessageByte());
         System.out.println("================="+str);
-    }
-
-    @Override
-    public void handleMessage(Message message, long currentOffset) {
-
     }
 }

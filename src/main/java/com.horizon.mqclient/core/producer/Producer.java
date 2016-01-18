@@ -17,19 +17,36 @@ import java.util.concurrent.TimeUnit;
  * @since : 1.0.0
  */
 public interface Producer<K,V> {
+
     /**
      * Send the given record asynchronously and return a future which will eventually contain the response information.
+     * but will not execute future.get() operation
      * @param message The record to send
      * @return A future which will eventually contain the response information
      */
     public Map<TopicWithPartition,Long> send(Message message);
     /**
+     * Send the given record asynchronously and return a future which will eventually contain the response information.
+     * @param message The record to send
+     * @param isBlockGet whether if block future.get() after send message ,default : false
+     * @return A future which will eventually contain the response information
+     */
+    public Map<TopicWithPartition,Long> send(Message message,boolean isBlockGet);
+    /**
      * send message given record and topic and partition
-     * invoke callback after send message
+     * invoke callback after send message,but will not execute future.get() operation
      * @param message
      * @return
      */
-    public Map<TopicWithPartition,Long> send(Message message, ProducerSendCallback callback);
+    public Map<TopicWithPartition,Long> send(Message message,ProducerSendCallback callback);
+    /**
+     * send message given record and topic and partition
+     * invoke callback after send message
+     * @param message
+     * @param isBlockGet whether if block future.get() after send message ,default : false
+     * @return
+     */
+    public Map<TopicWithPartition,Long> send(Message message, boolean isBlockGet, ProducerSendCallback callback);
     /**
      * Flush any accumulated records from the producer. Blocks until all sends are complete.
      */

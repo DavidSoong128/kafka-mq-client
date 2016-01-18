@@ -3,7 +3,6 @@ package com.horizon.mqclient.core.producer;
 import com.horizon.mqclient.api.Message;
 import com.horizon.mqclient.api.ProducerSendCallback;
 import com.horizon.mqclient.api.TopicWithPartition;
-import com.horizon.mqclient.utils.StringUtils;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
@@ -16,62 +15,80 @@ import java.util.concurrent.Future;
 
 /**
  * kafka client producer
+ *
  * @author : David.Song/Java Engineer
  * @date : 2016/1/4 11:55
  * @since : 1.0.0
  */
-public class KafkaClientProducer extends AbstractProducer<String,Message>{
+public class KafkaClientProducer extends AbstractProducer<String, Message> {
 
     private Logger logger = LoggerFactory.getLogger(KafkaClientProducer.class);
 
-    public KafkaClientProducer(){
+    public KafkaClientProducer() {
         super();
     }
 
-    public KafkaClientProducer(Map<String,Object> producerConfigMap){
+    public KafkaClientProducer(Map<String, Object> producerConfigMap) {
         super(producerConfigMap);
     }
 
-    private static class ProducerHolder{
+    private static class ProducerHolder {
         private static KafkaClientProducer clientProducer = new KafkaClientProducer();
     }
 
-    public static KafkaClientProducer kafkaClientProducer(){
+    public static KafkaClientProducer kafkaClientProducer() {
         return ProducerHolder.clientProducer;
     }
 
     @Override
     public Map<TopicWithPartition, Long> send(Message message) {
-        if(message == null || message.getTopic() == null){
-            throw  new IllegalArgumentException("topic and message can`t be null");
+        return this.send(message,false);
+    }
+
+    @Override
+    public Map<TopicWithPartition, Long> send(Message message, boolean isBlockGet) {
+        if (message == null || message.getTopic() == null) {
+            throw new IllegalArgumentException("topic and message can`t be null");
         }
-        ProducerRecord<String,Message>  messageRecord = new ProducerRecord<>(message.getTopic(),message);
+        ProducerRecord<String, Message> messageRecord = new ProducerRecord<>(message.getTopic(), message);
         Future<RecordMetadata> future = this.kafkaProducer.send(messageRecord);
-        return parseSendFuture(future);
+        return blockGetOrReturn(isBlockGet, future);
     }
 
     @Override
     public Map<TopicWithPartition, Long> send(Message message, ProducerSendCallback callback) {
-        if(message == null || message.getTopic() == null){
-            throw  new IllegalArgumentException("topic and message can`t be null");
-        }
-        ProducerRecord<String,Message>  messageRecord = new ProducerRecord<>(message.getTopic(),message);
-        Future<RecordMetadata> future = this.kafkaProducer.send(messageRecord,callback);
-        return parseSendFuture(future);
+        return this.send(message,false,callback);
     }
 
-    private Map<TopicWithPartition, Long> parseSendFuture(Future<RecordMetadata> future) {
-        Map<TopicWithPartition, Long> tpLongMap = new HashMap<>();
+    @Override
+    public Map<TopicWithPartition, Long> send(Message message, boolean isBlockGet, ProducerSendCallback callback) {
+        if (message == null || message.getTopic() == null) {
+            throw new IllegalArgumentException("topic and message can`t be null");
+        }
+        ProducerRecord<String, Message> messageRecord = new ProducerRecord<>(message.getTopic(), message);
+        Future<RecordMetadata> future = this.kafkaProducer.send(messageRecord, callback);
+        return blockGetOrReturn(isBlockGet, future);
+    }
+
+    private Map<TopicWithPartition, Long> getBlockFutureResult(Future<RecordMetadata> future) {
         try {
+            Map<TopicWithPartition, Long> tpLongMap = new HashMap<>();
+            //get method will block until send complete
             RecordMetadata recordMetadata = future.get();
             TopicWithPartition topicWithPartition = new TopicWithPartition(recordMetadata.topic(),
-                                                    recordMetadata.partition());
+                    recordMetadata.partition());
             tpLongMap.put(topicWithPartition, recordMetadata.offset());
         } catch (InterruptedException e) {
-            logger.error("future get error ",e);
+            logger.error("future get error ", e);
         } catch (ExecutionException e) {
             logger.error("future get error ", e);
         }
-        return tpLongMap;
+        return null;
+    }
+
+    private Map<TopicWithPartition, Long> blockGetOrReturn(boolean isBlockGet, Future<RecordMetadata> future) {
+        if(isBlockGet)
+            return getBlockFutureResult(future);
+        return null;
     }
 }

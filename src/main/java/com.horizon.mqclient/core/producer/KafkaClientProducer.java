@@ -24,7 +24,7 @@ public class KafkaClientProducer extends AbstractProducer<String, Message> {
 
     private Logger logger = LoggerFactory.getLogger(KafkaClientProducer.class);
 
-    public KafkaClientProducer() {
+    private KafkaClientProducer() {
         super();
     }
 

@@ -1,5 +1,6 @@
 package com.horizon.mqclient.api;
 
+import com.horizon.mqclient.exception.KafkaMQException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.consumer.OffsetCommitCallback;
 import org.apache.kafka.common.TopicPartition;
@@ -25,6 +26,8 @@ public abstract class CommitOffsetCallback implements OffsetCommitCallback{
                 tpOffsetMap.put(new TopicWithPartition(topicPartition.topic(),topicPartition.partition()),
                         offsetAndMetadata.offset());
             }
+            if(exception != null)
+                throw new KafkaMQException("onComplete exception {}",exception);
             this.commitComplete(tpOffsetMap);
         }
     }

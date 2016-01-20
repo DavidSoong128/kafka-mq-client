@@ -1,11 +1,10 @@
 package com.horizon.mqclient.core.consumer;
 
 import com.horizon.mqclient.api.CommitOffsetCallback;
-import com.horizon.mqclient.api.MessageProcessor;
+import com.horizon.mqclient.api.MessageHandler;
+import com.horizon.mqclient.api.OffsetRebalanceListener;
 import com.horizon.mqclient.api.TopicWithPartition;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
 
 import java.util.List;
 import java.util.Map;
@@ -28,17 +27,34 @@ public interface Consumer<K,V> {
     /**
      * subscribe one topic
      */
-    public void subscribe(String topic);
+    public void subscribe(String topic, MessageHandler handler);
+
+    /**
+     * subscribe one topic
+     * This is applicable when the consumer is having Kafka auto-manage group membership.
+     */
+    public void subscribe(String topic, MessageHandler handler, OffsetRebalanceListener listener);
+
+    /**
+     * subscribe list topics
+     * This is applicable when the consumer is having Kafka auto-manage group membership.
+     */
+    public void subscribe(List<String> topics, MessageHandler handler, OffsetRebalanceListener listener);
 
     /**
      * subscribe list topics
      */
-    public void subscribe(List<String> topics);
+    public void subscribe(List<String> topics,MessageHandler handler);
 
     /**
      * subscribe pattern topic with callback
      */
-    public void subscribe(Pattern pattern);
+    public void subscribe(Pattern pattern, MessageHandler handler, OffsetRebalanceListener listener);
+
+    /**
+     * subscribe pattern topic with callback
+     */
+    public void subscribe(Pattern pattern,MessageHandler handler);
 
     /**
      * close client consumer,release resources
@@ -64,14 +80,14 @@ public interface Consumer<K,V> {
      * @param topicWithPartition
      *
      */
-    public void assign(TopicWithPartition topicWithPartition);
+    public void assign(TopicWithPartition topicWithPartition,MessageHandler handler);
 
 
     /**
      * assgin topic list to a list of partition
      * @param topicWithPartitions
      */
-    public void assign(TopicWithPartition... topicWithPartitions);
+    public void assign(TopicWithPartition[] topicWithPartitions,MessageHandler handler);
 
     /**
      * one topic to list of partition
@@ -79,7 +95,7 @@ public interface Consumer<K,V> {
      * @param partitions
      * @throws Exception
      */
-    public void assign(String topic, Integer[] partitions);
+    public void assign(String topic, Integer[] partitions,MessageHandler handler);
 
 
 

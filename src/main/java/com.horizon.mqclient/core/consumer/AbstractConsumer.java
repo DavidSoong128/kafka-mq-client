@@ -1,6 +1,8 @@
 package com.horizon.mqclient.core.consumer;
 
 import com.horizon.mqclient.api.CommitOffsetCallback;
+import com.horizon.mqclient.api.MessageHandler;
+import com.horizon.mqclient.api.OffsetRebalanceListener;
 import com.horizon.mqclient.api.TopicWithPartition;
 import com.horizon.mqclient.common.ConsumerStatus;
 import com.horizon.mqclient.common.DefaultConsumerConfig;
@@ -25,19 +27,19 @@ import java.util.regex.Pattern;
  * @see
  * @since : 1.0.0
  */
-public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
+public abstract class AbstractConsumer<K, V> implements Consumer<K, V> {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected KafkaConsumer<K,V> kafkaConsumer;
+    protected KafkaConsumer<K, V> kafkaConsumer;
 
-    protected Map<String,Object> consumerConfigMap = new HashMap<>();
+    protected Map<String, Object> consumerConfigMap = new HashMap<>();
 
     protected volatile ConsumerStatus status = ConsumerStatus.INIT;
 
     private boolean isHighLevel = true;
 
-    public AbstractConsumer(boolean isHighLevel){
+    public AbstractConsumer(boolean isHighLevel) {
         this.isHighLevel = isHighLevel;
         //1: init kafka consumer
         initKafkaConsumer();
@@ -45,15 +47,15 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
         initKafkaClient();
     }
 
-    public AbstractConsumer(boolean isHighLevel,Map<String,Object> consumerConfigMap){
-        if(consumerConfigMap == null){
+    public AbstractConsumer(boolean isHighLevel, Map<String, Object> consumerConfigMap) {
+        if (consumerConfigMap == null) {
             throw new IllegalArgumentException("consumerConfigMap can`t be null");
         }
         Object enableCommit = consumerConfigMap.get(DefaultConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG);
-        if(enableCommit != null && !((Boolean)enableCommit) && isHighLevel){
-           throw new IllegalArgumentException("highConsumer enable commit can`t be false!");
+        if (enableCommit != null && !((Boolean) enableCommit) && isHighLevel) {
+            throw new IllegalArgumentException("highConsumer enable commit can`t be false!");
         }
-        if(enableCommit != null && ((Boolean)enableCommit) && !isHighLevel){
+        if (enableCommit != null && ((Boolean) enableCommit) && !isHighLevel) {
             throw new IllegalArgumentException("lowConsumer enable commit can`t be true!");
         }
         this.isHighLevel = isHighLevel;
@@ -69,18 +71,18 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
     }
 
     private void initKafkaConsumer() {
-        if(consumerConfigMap.get(DefaultConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG) == null){
-            if(isHighLevel){
-                consumerConfigMap.put(DefaultConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,true);
-            }else{
-                consumerConfigMap.put(DefaultConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,false);
+        if (consumerConfigMap.get(DefaultConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG) == null) {
+            if (isHighLevel) {
+                consumerConfigMap.put(DefaultConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
+            } else {
+                consumerConfigMap.put(DefaultConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
             }
         }
-        if(consumerConfigMap.get(DefaultConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG) == null){
-            consumerConfigMap.put(DefaultConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG,1000);
+        if (consumerConfigMap.get(DefaultConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG) == null) {
+            consumerConfigMap.put(DefaultConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 1000);
         }
-        if(consumerConfigMap.get(DefaultConsumerConfig.FETCH_MIN_BYTES_CONFIG) == null){
-            consumerConfigMap.put(DefaultConsumerConfig.FETCH_MIN_BYTES_CONFIG,1);
+        if (consumerConfigMap.get(DefaultConsumerConfig.FETCH_MIN_BYTES_CONFIG) == null) {
+            consumerConfigMap.put(DefaultConsumerConfig.FETCH_MIN_BYTES_CONFIG, 1);
         }
         consumerConfigMap.put("key.deserializer", StringDeserializer.class);
         consumerConfigMap.put("value.deserializer", ValueDeserializer.class);
@@ -89,21 +91,64 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
         kafkaConsumer = new KafkaConsumer(consumerConfigMap);
     }
 
-    @Override
-    public void subscribe(List topics){
-        if(topics == null || topics.size() <=0 ){
-            throw new IllegalArgumentException("topic list can`t be null or empty");
+    public void subscribe(List topics, MessageHandler handler, OffsetRebalanceListener listener) {
+        if (topics == null || topics.size() <= 0 || listener == null) {
+            throw new IllegalArgumentException("topic list and listener can`t be null or empty");
         }
         if (status != ConsumerStatus.INIT) {
             throw new KafkaMQException("The client has been started.");
         }
-        this.kafkaConsumer.subscribe(topics);
+        listener.setKafkaConsumer(this.kafkaConsumer);
+        this.kafkaConsumer.subscribe(topics, listener);
         status = ConsumerStatus.RUNNING;
     }
 
-    @Override
-    public void subscribe(String topic){
-        if(StringUtils.isEmpty(topic)){
+    public void subscribe(String topic, MessageHandler handler, OffsetRebalanceListener listener) {
+        if (StringUtils.isEmpty(topic) || listener == null) {
+            throw new IllegalArgumentException("topic and listener can`t be null or empty");
+        }
+        if (status != ConsumerStatus.INIT) {
+            throw new KafkaMQException("The client has been started.");
+        }
+        listener.setKafkaConsumer(this.kafkaConsumer);
+        this.kafkaConsumer.subscribe(Arrays.asList(topic), listener);
+        status = ConsumerStatus.RUNNING;
+    }
+
+    public void subscribe(Pattern pattern, MessageHandler handler, OffsetRebalanceListener listener) {
+        if (pattern == null ||  listener == null) {
+            throw new IllegalArgumentException("pattern and listener can`t be null");
+        }
+        if (status != ConsumerStatus.INIT) {
+            throw new KafkaMQException("The client has been started.");
+        }
+        listener.setKafkaConsumer(this.kafkaConsumer);
+        this.kafkaConsumer.subscribe(pattern, listener);
+        status = ConsumerStatus.RUNNING;
+    }
+
+    public void subscribe(Pattern pattern,MessageHandler handler) {
+        if (pattern == null) {
+            throw new IllegalArgumentException("pattern can`t be null");
+        }
+        if (status != ConsumerStatus.INIT) {
+            throw new KafkaMQException("The client has been started.");
+        }
+        this.kafkaConsumer.subscribe(pattern, new ConsumerRebalanceListener() {
+            @Override
+            public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+                logger.debug("onPartitionsRevoked {}",partitions);
+            }
+            @Override
+            public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+                logger.debug("onPartitionsAssigned {}",partitions);
+            }
+        });
+        status = ConsumerStatus.RUNNING;
+    }
+
+    public void subscribe(String topic,MessageHandler handler) {
+        if (StringUtils.isEmpty(topic)) {
             throw new IllegalArgumentException("topic can`t be null or empty");
         }
         if (status != ConsumerStatus.INIT) {
@@ -113,31 +158,19 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
         status = ConsumerStatus.RUNNING;
     }
 
-    @Override
-    public void subscribe(Pattern pattern){
-        if(pattern == null){
-            throw new IllegalArgumentException("pattern can`t be null");
+    public void subscribe(List<String> topics,MessageHandler handler) {
+        if (topics == null || topics.size() <= 0) {
+            throw new IllegalArgumentException("topic list can`t be null or empty");
         }
         if (status != ConsumerStatus.INIT) {
             throw new KafkaMQException("The client has been started.");
         }
-        this.kafkaConsumer.subscribe(pattern, new ConsumerRebalanceListener() {
-            @Override
-            public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
-                logger.info("partitions revoked!");
-            }
-
-            @Override
-            public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
-                logger.info("partitions assigned!");
-            }
-        });
+        this.kafkaConsumer.subscribe(topics);
         status = ConsumerStatus.RUNNING;
     }
 
-    @Override
-    public void assign(TopicWithPartition topicWithPartition)  {
-        if(topicWithPartition == null){
+    public void assign(TopicWithPartition topicWithPartition,MessageHandler handler) {
+        if (topicWithPartition == null) {
             throw new IllegalArgumentException("topicWithPartition cant be null");
         }
         if (status != ConsumerStatus.INIT) {
@@ -149,16 +182,15 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
         status = ConsumerStatus.RUNNING;
     }
 
-    @Override
-    public void assign(TopicWithPartition... topicWithPartitions)  {
-        if(topicWithPartitions == null || topicWithPartitions.length == 0){
+    public void assign(TopicWithPartition[] topicWithPartitions,MessageHandler handler) {
+        if (topicWithPartitions == null || topicWithPartitions.length == 0) {
             throw new IllegalArgumentException("topicWithPartitions can`t be null or empty");
         }
         if (status != ConsumerStatus.INIT) {
             throw new KafkaMQException("The client has been started.");
         }
-        List<TopicPartition>  topicPartitionList = new ArrayList<>();
-        for(TopicWithPartition topicWithPartition : topicWithPartitions){
+        List<TopicPartition> topicPartitionList = new ArrayList<>();
+        for (TopicWithPartition topicWithPartition : topicWithPartitions) {
             TopicPartition topicPartition = new TopicPartition(topicWithPartition.getTopic(),
                     topicWithPartition.getPartition());
             topicPartitionList.add(topicPartition);
@@ -167,16 +199,15 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
         status = ConsumerStatus.RUNNING;
     }
 
-    @Override
-    public void assign(String topic, Integer[] partitions)  {
-        if(StringUtils.isEmpty(topic) || partitions == null || partitions.length <0){
+    public void assign(String topic, Integer[] partitions,MessageHandler handler) {
+        if (StringUtils.isEmpty(topic) || partitions == null || partitions.length < 0) {
             throw new IllegalArgumentException("topic can`t be null and partitions length >=0");
         }
         if (status != ConsumerStatus.INIT) {
             throw new KafkaMQException("The client has been started.");
         }
-        List<TopicPartition>  topicPartitionList = new ArrayList<>();
-        for(Integer partition : partitions){
+        List<TopicPartition> topicPartitionList = new ArrayList<>();
+        for (Integer partition : partitions) {
             TopicPartition topicPartition = new TopicPartition(topic, partition);
             topicPartitionList.add(topicPartition);
         }
@@ -186,11 +217,11 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
 
 
     @Override
-    public void resetOffset(TopicWithPartition topicWithPartition, long resetOffset)  {
-        if(topicWithPartition == null){
+    public void resetOffset(TopicWithPartition topicWithPartition, long resetOffset) {
+        if (topicWithPartition == null) {
             throw new IllegalArgumentException("topicWithPartitions can`t be null");
         }
-        if(status != ConsumerStatus.RUNNING){
+        if (status != ConsumerStatus.RUNNING) {
             throw new KafkaMQException("The consumer is not running now!");
         }
         TopicPartition topicPartition = new TopicPartition(topicWithPartition.getTopic(),
@@ -200,11 +231,11 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
 
 
     @Override
-    public void resetOffsetToBegin(TopicWithPartition... topicWithPartitions)  {
-        if(topicWithPartitions == null || topicWithPartitions.length == 0){
+    public void resetOffsetToBegin(TopicWithPartition... topicWithPartitions) {
+        if (topicWithPartitions == null || topicWithPartitions.length == 0) {
             throw new IllegalArgumentException("topicWithPartitions can`t be null or contain no elements");
         }
-        if(status != ConsumerStatus.RUNNING){
+        if (status != ConsumerStatus.RUNNING) {
             throw new KafkaMQException("The consumer is not running now!");
         }
         TopicPartition[] tmpTpArray = convertTopicPartition(topicWithPartitions);
@@ -213,11 +244,11 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
 
 
     @Override
-    public void resetOffsetToEnd(TopicWithPartition... topicWithPartitions)  {
-        if(topicWithPartitions == null || topicWithPartitions.length == 0){
+    public void resetOffsetToEnd(TopicWithPartition... topicWithPartitions) {
+        if (topicWithPartitions == null || topicWithPartitions.length == 0) {
             throw new IllegalArgumentException("topicWithPartitions can`t be null or contain no elements");
         }
-        if(status != ConsumerStatus.RUNNING){
+        if (status != ConsumerStatus.RUNNING) {
             throw new KafkaMQException("The consumer is not running now!");
         }
         TopicPartition[] tmpTpArray = convertTopicPartition(topicWithPartitions);
@@ -225,11 +256,11 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
     }
 
     @Override
-    public long currentOffset(TopicWithPartition topicWithPartition)  {
-        if(topicWithPartition == null){
+    public long currentOffset(TopicWithPartition topicWithPartition) {
+        if (topicWithPartition == null) {
             throw new IllegalArgumentException("topicWithPartition can`t be null");
         }
-        if(status != ConsumerStatus.RUNNING){
+        if (status != ConsumerStatus.RUNNING) {
             throw new KafkaMQException("The consumer is not running now!");
         }
         TopicPartition topicPartition = new TopicPartition(topicWithPartition.getTopic(),
@@ -239,12 +270,12 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
 
 
     @Override
-    public void pauseConsume(TopicWithPartition... topicWithPartitions)  {
-        if(topicWithPartitions == null || topicWithPartitions.length ==0){
+    public void pauseConsume(TopicWithPartition... topicWithPartitions) {
+        if (topicWithPartitions == null || topicWithPartitions.length == 0) {
             throw new IllegalArgumentException("topicWithPartitions can`t be null " +
                     " and or empty");
         }
-        if(status != ConsumerStatus.RUNNING){
+        if (status != ConsumerStatus.RUNNING) {
             throw new KafkaMQException("The consumer is not running now!");
         }
         TopicPartition[] tmpTpArray = convertTopicPartition(topicWithPartitions);
@@ -252,12 +283,12 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
     }
 
     @Override
-    public void resumeConsume(TopicWithPartition... topicWithPartitions)  {
-        if(topicWithPartitions == null || topicWithPartitions.length ==0){
+    public void resumeConsume(TopicWithPartition... topicWithPartitions) {
+        if (topicWithPartitions == null || topicWithPartitions.length == 0) {
             throw new IllegalArgumentException("topicWithPartitions can`t be null " +
                     " and or empty");
         }
-        if(status != ConsumerStatus.RUNNING){
+        if (status != ConsumerStatus.RUNNING) {
             throw new KafkaMQException("The consumer is not running now!");
         }
         TopicPartition[] tmpTpArray = convertTopicPartition(topicWithPartitions);
@@ -265,23 +296,23 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
     }
 
     @Override
-    public void commitAsync()  {
+    public void commitAsync() {
     }
 
     @Override
-    public void commitAsync(Map<TopicWithPartition,Long> offsets, CommitOffsetCallback callback)  {
+    public void commitAsync(Map<TopicWithPartition, Long> offsets, CommitOffsetCallback callback) {
     }
 
     @Override
-    public void commitAsync(CommitOffsetCallback callback)  {
+    public void commitAsync(CommitOffsetCallback callback) {
     }
 
     @Override
-    public void commitSync()  {
+    public void commitSync() {
     }
 
     @Override
-    public void commitSync(Map<TopicWithPartition, Long> offsets)  {
+    public void commitSync(Map<TopicWithPartition, Long> offsets) {
     }
 
     @Override
@@ -307,7 +338,7 @@ public abstract class AbstractConsumer<K,V> implements Consumer<K,V>{
     protected TopicPartition[] convertTopicPartition(TopicWithPartition[] topicWithPartitions) {
         TopicPartition[] tmpTpArray = new TopicPartition[topicWithPartitions.length];
         int k = 0;
-        for(TopicWithPartition topicWithPartition : topicWithPartitions){
+        for (TopicWithPartition topicWithPartition : topicWithPartitions) {
             TopicPartition topicPartition = new TopicPartition(topicWithPartition.getTopic(),
                     topicWithPartition.getPartition());
             tmpTpArray[k] = topicPartition;

@@ -15,7 +15,7 @@ public class KafkaProducerTest {
         KafkaClientProducer producer = KafkaClientProducer.kafkaClientProducer();
         StringBuilder builder = new StringBuilder();
         for(int i=0;i<=100;i++){
-            Message message = new Message("dabao",("message"+i).getBytes());
+            Message message = new Message("songwei",("message"+i).getBytes());
             producer.send(message);
         }
         producer.close();

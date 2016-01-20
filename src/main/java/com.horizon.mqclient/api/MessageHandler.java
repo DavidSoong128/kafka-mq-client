@@ -9,7 +9,7 @@ package com.horizon.mqclient.api;
  * @see
  * @since : 1.0.0
  */
-public interface MessageProcessor {
+public interface MessageHandler {
 
     /**
      * high consumer api, auto commit offset

@@ -13,7 +13,7 @@ public class KafkaConsumerTest {
     public static void main(String[] args){
         KafkaHighConsumer kafkaHighConsumer = KafkaHighConsumer.kafkaHighConsumer();
         String topic = "dabao";
-        kafkaHighConsumer.subscribe(topic,new TestMessageProcessor());
+        kafkaHighConsumer.subscribe(topic,new TestMessageHandler());
         try {
             System.in.read();
         } catch (Exception e) {

@@ -1,9 +1,6 @@
 package com.horizon.mqclient.core.consumer;
 
-import com.horizon.mqclient.api.CommitOffsetCallback;
-import com.horizon.mqclient.api.Message;
-import com.horizon.mqclient.api.MessageProcessor;
-import com.horizon.mqclient.api.TopicWithPartition;
+import com.horizon.mqclient.api.*;
 import com.horizon.mqclient.common.ConsumerStatus;
 import com.horizon.mqclient.common.MsgHandleStreamPool;
 import com.horizon.mqclient.exception.KafkaMQException;
@@ -24,7 +21,7 @@ import java.util.regex.Pattern;
  * manual manage offset commit
  * @author : David.Song/Java Engineer
  * @date : 2016/1/6 14:29
- * @see
+ * @see ManualCommitMessageHandler
  * @since : 1.0.0
  */
 public class KafkaLowConsumer extends AbstractConsumer<String,Message>{
@@ -47,29 +44,49 @@ public class KafkaLowConsumer extends AbstractConsumer<String,Message>{
         return ConsumerHolder.clientConsumer;
     }
 
-    public void subscribe(String topic, MessageProcessor processor) {
-        super.subscribe(topic);
-        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer,processor));
+    public void subscribe(String topic, MessageHandler handler) {
+        super.subscribe(topic,handler);
+        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer,handler));
     }
 
-    public void subscribe(List topics ,MessageProcessor processor) {
-        super.subscribe(topics);
-        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer, processor));
+    public void subscribe(List topics ,MessageHandler handler) {
+        super.subscribe(topics,handler);
+        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer, handler));
     }
 
-    public void subscribe(Pattern pattern,MessageProcessor processor) {
-        super.subscribe(pattern);
-        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer, processor));
+    public void subscribe(Pattern pattern,MessageHandler handler) {
+        super.subscribe(pattern,handler);
+        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer, handler));
     }
 
-    public void assign(String topic, Integer[] partitions,MessageProcessor processor) {
-        super.assign(topic, partitions);
-        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer, processor));
+    public void subscribe(Pattern pattern, MessageHandler handler, OffsetRebalanceListener listener) {
+        super.subscribe(pattern,handler,listener);
+        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer,handler));
     }
 
-    public void assign(TopicWithPartition topicWithPartition, MessageProcessor processor) {
-        super.assign(topicWithPartition);
-        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer,processor));
+    public void subscribe(String topic, MessageHandler handler, OffsetRebalanceListener listener){
+        super.subscribe(topic,handler,listener);
+        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer,handler));
+    }
+
+    public void subscribe(List topics , MessageHandler handler, OffsetRebalanceListener listener){
+        super.subscribe(topics,handler,listener);
+        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer, handler));
+    }
+
+    public void assign(String topic, Integer[] partitions,MessageHandler handler) {
+        super.assign(topic, partitions,handler);
+        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer, handler));
+    }
+
+    public void assign(TopicWithPartition topicWithPartition, MessageHandler handler) {
+        super.assign(topicWithPartition,handler);
+        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer,handler));
+    }
+
+    public void assign(TopicWithPartition[] topicWithPartitions, MessageHandler handler) {
+        super.assign(topicWithPartitions,handler);
+        MsgHandleStreamPool.poolHolder().execute(new MessageWorkManualCommitTask(kafkaConsumer,handler));
     }
 
     @Override
@@ -130,11 +147,11 @@ public class KafkaLowConsumer extends AbstractConsumer<String,Message>{
 
         private static final long POLL_TIMEOUT = 1;
         private final KafkaConsumer kafkaConsumer;
-        private final MessageProcessor processor;
+        private final MessageHandler handler;
 
-        public MessageWorkManualCommitTask(KafkaConsumer kafkaConsumer, MessageProcessor processor) {
+        public MessageWorkManualCommitTask(KafkaConsumer kafkaConsumer, MessageHandler handler) {
             this.kafkaConsumer = kafkaConsumer;
-            this.processor = processor;
+            this.handler = handler;
         }
 
         @Override
@@ -143,7 +160,7 @@ public class KafkaLowConsumer extends AbstractConsumer<String,Message>{
                 try {
                     ConsumerRecords<String, Message> records = kafkaConsumer.poll(POLL_TIMEOUT);
                     for (ConsumerRecord<String, Message> record : records) {
-                        processor.handleMessage(record.value(),record.offset());
+                        handler.handleMessage(record.value(),record.offset());
                     }
                 } catch (Exception ex) {
                     logger.error("poll message error ", ex);

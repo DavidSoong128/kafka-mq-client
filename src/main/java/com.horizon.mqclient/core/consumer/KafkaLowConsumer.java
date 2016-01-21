@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * manual manage offset commit
  * @author : David.Song/Java Engineer
  * @date : 2016/1/6 14:29
- * @see ManualCommitMessageHandler
+ * @see
  * @since : 1.0.0
  */
 public class KafkaLowConsumer extends AbstractConsumer<String,Message>{
@@ -160,7 +160,9 @@ public class KafkaLowConsumer extends AbstractConsumer<String,Message>{
                 try {
                     ConsumerRecords<String, Message> records = kafkaConsumer.poll(POLL_TIMEOUT);
                     for (ConsumerRecord<String, Message> record : records) {
-                        handler.handleMessage(record.value(),record.offset());
+                        ConsumerResult result = new ConsumerResult(record.topic(), record.partition(),
+                                                                   record.offset(),record.value());
+                        handler.handleMessage(result);
                     }
                 } catch (Exception ex) {
                     logger.error("poll message error ", ex);

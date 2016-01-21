@@ -12,15 +12,9 @@ package com.horizon.mqclient.api;
 public interface MessageHandler {
 
     /**
-     * high consumer api, auto commit offset
-     * @param message
+     * handle message
+     * @param result
      */
-    public void handleMessage(Message message);
+    public void handleMessage(ConsumerResult result);
 
-    /**
-     * low consumer api, need to manual commit offset
-     * @param message
-     * @param currentOffset: the lasted poll offset
-     */
-    public void handleMessage(Message message,long currentOffset);
 }

@@ -1,7 +1,8 @@
 package com.horizon.test.consumer;
 
-import com.horizon.mqclient.api.AutoCommitMessageHandler;
+import com.horizon.mqclient.api.ConsumerResult;
 import com.horizon.mqclient.api.Message;
+import com.horizon.mqclient.api.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,13 +12,13 @@ import org.slf4j.LoggerFactory;
  * @see
  * @since : 1.0.0
  */
-public class TestMessageHandler extends AutoCommitMessageHandler {
+public class TestMessageHandler implements MessageHandler {
 
     private Logger logger = LoggerFactory.getLogger(TestMessageHandler.class);
 
     @Override
-    public void handleMessage(Message message) {
-        String str = new String(message.getMessageByte());
+    public void handleMessage(ConsumerResult result) {
+        String str = new String(result.getValue().getMessageByte());
         System.out.println("================="+str);
     }
 }

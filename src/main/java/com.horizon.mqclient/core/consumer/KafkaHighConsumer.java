@@ -9,7 +9,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -17,7 +18,7 @@ import java.util.regex.Pattern;
  * @author : David.Song/Java Engineer
  * @date : 2016/1/4 11:54
  * @since : 1.0.0
- * @see AutoCommitMessageHandler
+ * @see
  */
 public class KafkaHighConsumer extends AbstractConsumer<String,Message>{
 
@@ -102,7 +103,9 @@ public class KafkaHighConsumer extends AbstractConsumer<String,Message>{
                 try {
                     ConsumerRecords<String, Message> records = kafkaConsumer.poll(POLL_TIMEOUT);
                     for (ConsumerRecord<String, Message> record : records) {
-                        handler.handleMessage(record.value());
+                        ConsumerResult result = new ConsumerResult(record.topic(),record.partition(),
+                                                                   record.offset(),record.value());
+                        handler.handleMessage(result);
                     }
                 } catch (Exception ex) {
                     logger.error("poll message error ", ex);
